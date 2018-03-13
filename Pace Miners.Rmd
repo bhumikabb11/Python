@@ -1,0 +1,226 @@
+---
+title: "Project Part 1"
+author: "Pace Miners"
+date: "March 27, 2017"
+output: word_document
+---
+
+```{r}
+install.packages('dplyr')
+library(dplyr)
+install.packages('bdvis')
+library("ggplot2")
+grossVal <- IMDB[IMDB$gross > 15000,]
+grossVal
+str(IMDB)
+plot(IMDB$actor_1_facebook_likes, IMDB$gross, xlim = c(0,25000))
+ggplot(IMDB, aes(imdb_score, Returns))+ geom_point()
+max(IMDB[IMDB$Returns > 0, "Returns"])
+IMDB[IMDB$Returns == 368.43, "title_year"]
+r <- select(IMDB, Returns)
+str(IMDB)
+r
+boxplot(IMDB$Returns)
+```
+```{r}
+IMDB %>%
+  select(duration,title_year) %>%
+  group_by(title_year) %>%
+  summarise(duration = mean(duration)) %>%
+  ggplot(aes(duration,title_year)) + geom_point() + xlim(c(50,200)) + ylim(1960,2016)
+```
+
+```{r}
+
+IMDB %>%
+  select(genres, gross) %>%
+  group_by(genres) %>%
+  summarise(grossVal = mean(gross)) %>%
+  arrange(desc(grossVal)) %>%
+  top_n(10, grossVal) %>%
+  ggplot(aes(genres, grossVal)) + geom_point()
+
+grep("Horror", IMDB$genres)
+
+library('dplyr')
+library('ggplot2')
+HorrorMov <- IMDB %>%
+  group_by(title_year) %>%
+  filter(Horror == 1) %>%
+  summarise(ret = mean(Returns)) %>%
+  mutate(genre = "Horror")
+
+ActionMov <- IMDB %>%
+  group_by(title_year) %>%
+  filter(Action == 1) %>%
+  summarise(ret = mean(Returns)) %>%
+  mutate(genre = "Action")
+
+RomanceMov <- IMDB %>%
+  group_by(title_year) %>%
+  filter(Romance == 1) %>%
+  summarise(ret = mean(Returns)) %>%
+  mutate(genre = "Romance")
+
+ComedyMov <- IMDB %>%
+  group_by(title_year) %>%
+  filter(Comedy == 1) %>%
+  summarise(ret = mean(Returns)) %>%
+  mutate(genre = "Comedy")
+
+DramaMov <- IMDB %>%
+  group_by(title_year) %>%
+  filter(Drama == 1) %>%
+  summarise(ret = mean(Returns)) %>%
+  mutate(genre = "Drama")
+
+AdventureMov <- IMDB %>%
+  group_by(title_year) %>%
+  filter(Adventure == 1) %>%
+  summarise(ret = mean(Returns)) %>%
+  mutate(genre = "Adventure")
+
+FamilyHorrorMov <- IMDB %>%
+  group_by(title_year) %>%
+  filter(Family == 1) %>%
+  summarise(ret = mean(Returns)) %>%
+  mutate(genre = "Family")
+
+ThrillerMov <- IMDB %>%
+  group_by(title_year) %>%
+  filter(Thriller == 1) %>%
+  summarise(ret = mean(Returns)) %>%
+  mutate(genre = "Thriller")
+
+mergedData <- merge(HorrorMov, ActionMov, by = "title_year")
+
+megD <- rbind(HorrorMov, ActionMov)
+summary(IMDB$Returns)
+summary(IMDB$gross)
+hist(IMDB$Returns)
+bins <- axis(1, at=seq(-2, 7193))
+hist(IMDB$gross)
+boxplot(IMDB$gross)
+
+library(dplyr)
+
+
+boxplot(GrossData$gross)
+hist(GrossData$gross)
+hist(GrossData$duration)
+plot(GrossData$duration, GrossData$gross)
+summary(GrossData$gross)
+
+
+summary(IMDB)
+
+```
+
+```{r}
+IMDB %>%
+  filter(title_year > 2007) %>%
+  group_by(title_year) %>%
+  summarise(grossVal = mean(gross)) %>%
+  na.omit() %>%
+  ggplot(aes(title_year, grossVal)) + ggtitle("Gross over past Decade") + geom_line(color = "red") + geom_point() + theme_classic() + geom_smooth(se = FALSE, method = loess) + theme(plot.title = element_text(hjust = 0.5))
+  
+```
+
+```{r}
+table(IMDB$title_year)
+library(dplyr)
+library(ggplot2)
+LasstData <- IMDB %>%
+  filter(title_year > 2002 & gross > 100000 & (content_rating == "G" | content_rating == "NC-17" | content_rating == "PG" | content_rating == "PG-13" | content_rating == "R" )) %>%
+  mutate(PercProfit = Profit/gross * 100)
+  
+LasstData %>%
+  filter(PercProfit > 10) %>%
+  
+  
+```
+
+```{r}
+IMDB%>%
+  select(budget, Returns, title_year, Profit, imdb_score ) %>%
+  group_by(title_year) %>%
+  na.omit() %>%
+  summarise(Returns = mean(Returns), score= mean(imdb_score), profit = mean(Profit), budget = mean(budget)) %>%
+   arrange(desc(title_year)) %>%
+  ggplot(aes(title_year, budget, fill = score)) + geom_point(stat = "identity") + geom_bar(stat = "identity") + geom_smooth(method = loess, color = "black", se = FALSE) + ggtitle('Average Budget of a movie past century with IMDB score') +xlab('Year') + ylab('Budget in $') + scale_fill_continuous(low="red", high="Green", limit = c(1,10))+ scale_color_grey() + theme(plot.title = element_text(hjust = 0.5), panel.background = element_rect(fill = "lightyellow"))
+```
+
+
+```{r}
+options(scipen = 100)
+install.packages('ggrepel')
+library(ggrepel)
+IMDB%>%
+  select(budget, Profit, movie_title, imdb_score ) %>%
+  group_by(movie_title) %>%
+  na.omit() %>%
+  summarise(profit= (as.numeric(Profit)), budget = mean(as.numeric(budget))) %>%
+  arrange(desc(profit))%>%
+  top_n(10, profit)%>%
+ggplot(aes(x = budget, y = profit)) + geom_bar(stat = "identity", color = "red") + geom_text_repel(aes(label= movie_title), size=2, color = "Black") + scale_color_grey() + xlab ("Budget in $") + ylab ("Profit in $") + ggtitle("Top Movies with biggest Profit") +geom_point() + theme(plot.title = element_text(hjust = 0.5), panel.background = element_rect(fill = "lightyellow"))
+```
+
+```{r}
+install.packages("reshape2")
+IMDB2%>%
+  select(imdb_score,Rate, content_rating)%>%
+ggplot(aes(imdb_score, fill = Rate )) + geom_histogram(binwidth = 0.2) + theme(panel.background = element_rect(fill = 'lightyellow')) + ggtitle('IMDB Score with respect to Content Ratings') + ylab('Count') + xlab('Rating (0-10)') + labs(color = "ABC") + facet_grid(~content_rating, scales="free") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+NumofMov <- IMDB %>%
+  filter(title_year > 2006 & gross > 0)
+length(NumofMov$movie_title)
+NofMov <- data.frame(table(NumofMov$title_year))
+colnames(NofMov) <- c("Year", "Movies")
+
+  ggplot(NofMov, aes(y = Movies, x = Year)) + ylab("Number of Movies") +  geom_bar(stat = "identity", fill = "blue") + theme(panel.background = element_rect(fill = 'lightyellow')) + ggtitle('Number of Movies released in last decade') + geom_text(aes(label= Movies), size=5, color = "Red", position = position_dodge(width=1), vjust= -0.2) + theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+```{r}
+ProfitMovie <- NumofMov %>%
+  filter(title_year > 2006 & Profit > 0)
+
+NofPMov <- data.frame(table(ProfitMovie$title_year))
+colnames(NofPMov) <- c("Year", "Movies")
+
+  ggplot(NofPMov, aes(y = Movies, x = Year)) + ylab("Number of Movies") +  geom_bar(stat = "identity", fill = "blue") + ggtitle('Number of Movies making profit in last decade') + theme(panel.background = element_rect(fill = 'lightyellow')) + geom_text(aes(label= Movies), size=5, color = "Red", position = position_dodge(width=1), vjust= -0.2) + theme(plot.title = element_text(hjust = 0.5))
+  
+sum(NofPMov$Movies)
+```
+
+```{r}
+LossMovie <- NumofMov %>%
+  filter(title_year > 2006 & Profit < 0)
+
+NofLMov <- data.frame(table(LossMovie$title_year))
+colnames(NofLMov) <- c("Year", "Movies")
+
+  ggplot(NofLMov, aes(y = Movies, x = Year)) + ylab("Number of Movies") +  geom_bar(stat = "identity", fill = "blue") + ggtitle('Number of Movies making losses in last decade') + theme(panel.background = element_rect(fill = 'lightyellow')) + geom_text(aes(label= Movies), size=5, color = "Red", position = position_dodge(width=1), vjust= -0.2) + theme(plot.title = element_text(hjust = 0.5))
+  
+sumL <- sum(NofLMov$Movies)
+sumL
+mean(sumL)
+```
+
+
+
+```{r}
+IMDB%>%
+  select(budget, Returns, title_year, Profit, imdb_score ) %>%
+  group_by(title_year) %>%
+  na.omit() %>%
+  summarise(Returns = mean(Returns), score= mean(imdb_score), profit = mean(Profit), budget = mean(budget)) %>%
+   arrange(desc(title_year)) %>%
+  ggplot(aes(title_year, budget, fill = score)) + geom_point(stat = "identity") + geom_bar(stat = "identity") + geom_smooth(method = loess, color = "black", se = FALSE) + ggtitle('Average Budget of a movie past century with IMDB score') +xlab('Year') + ylab('Budget in $') + scale_fill_continuous(low="red", high="Green", limit = c(1,10))+ scale_color_grey() + theme(plot.title = element_text(hjust = 0.5), panel.background = element_rect(fill = "lightyellow"))
+```
+
